@@ -1,16 +1,20 @@
-import React from 'react'
-import { Item, Label, Segment, Icon } from 'semantic-ui-react'
+import React, { SyntheticEvent } from 'react'
+import { Item, Label, Segment, Icon, Button } from 'semantic-ui-react'
 import { IActivity } from '../../../models/activity'
 
 interface IProps {
   activities: IActivity[]
   selectActivity: (id: string) => void
-  deleteActivity: (id: string) => void
+  deleteActivity: (event: SyntheticEvent<HTMLButtonElement>, id: string) => void
+  submitting: boolean
+  target: string
 }
 export const ActivityList: React.FC<IProps> = ({
   activities,
   selectActivity,
   deleteActivity,
+  submitting,
+  target,
 }) => {
   return (
     <Segment clearing>
@@ -27,22 +31,26 @@ export const ActivityList: React.FC<IProps> = ({
                 </div>
               </Item.Description>
               <Item.Extra>
-                <span className='spanRight'>
-                  <Icon
-                    size='large'
-                    color='blue'
-                    onClick={() => selectActivity(activity.id)}
-                    name='eye'
-                  />
-                </span>
-                <span className='spanRight'>
-                  <Icon
-                    onClick={() => deleteActivity(activity.id)}
-                    size='large'
-                    color='red'
-                    name='trash alternate'
-                  />
-                </span>
+                <Button
+                  icon
+                  color='teal'
+                  labelPosition='right'
+                  floated='right'
+                  onClick={() => selectActivity(activity.id)}>
+                  <Icon name='eye' />
+                  View
+                </Button>
+                <Button
+                  name={activity.id}
+                  loading={target === activity.id && submitting}
+                  icon
+                  color='red'
+                  onClick={(e) => deleteActivity(e, activity.id)}
+                  labelPosition='right'
+                  floated='right'>
+                  <Icon name='trash alternate' />
+                  Delete
+                </Button>
 
                 <Label basic content={activity.category} />
               </Item.Extra>
