@@ -1,36 +1,35 @@
-import React from 'react'
+import React, { useContext } from 'react'
 import { Card, Image, Button, Icon } from 'semantic-ui-react'
-import { IActivity } from '../../../models/activity'
 
-interface IProps {
-  activity: IActivity
-  setEditMode: (editMode: boolean) => void
-  setSelectedActivity: (activity: IActivity | null) => void
-}
-export const ActivityDetails: React.FC<IProps> = ({
-  activity,
-  setEditMode,
-  setSelectedActivity,
-}) => {
+import { observer } from 'mobx-react-lite'
+import ActivityStore from '../../../stores/activityStore'
+
+const ActivityDetails: React.FC = () => {
+  const activityStore = useContext(ActivityStore)
+  const {
+    selectedActivity: activity,
+    openEditForm,
+    cancelSelectedActivity,
+  } = activityStore
   return (
     <Card fluid>
       <Image
-        src={`/assets/categoryImages/${activity.category}.jpg`}
+        src={`/assets/categoryImages/${activity!.category}.jpg`}
         wrapped
         ui={false}
       />
       <Card.Content>
-        <Card.Header>{activity.title}</Card.Header>
+        <Card.Header>{activity!.title}</Card.Header>
         <Card.Meta>
-          <span>{activity.date}</span>
+          <span>{activity!.date}</span>
         </Card.Meta>
-        <Card.Description>{activity.description}</Card.Description>
+        <Card.Description>{activity!.description}</Card.Description>
       </Card.Content>
       <Card.Content extra>
         <Button.Group widths={2}>
           <Button
             style={{ marginRight: '10px' }}
-            onClick={() => setEditMode(true)}
+            onClick={() => openEditForm(activity!.id)}
             icon
             labelPosition='right'>
             <Icon name='edit' /> Edit
@@ -38,7 +37,7 @@ export const ActivityDetails: React.FC<IProps> = ({
           <Button
             icon
             labelPosition='right'
-            onClick={() => setSelectedActivity(null)}
+            onClick={cancelSelectedActivity}
             floated='right'>
             <Icon name='cancel' />
             Cancel
@@ -48,3 +47,5 @@ export const ActivityDetails: React.FC<IProps> = ({
     </Card>
   )
 }
+
+export default observer(ActivityDetails)
