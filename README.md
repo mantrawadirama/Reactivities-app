@@ -10,6 +10,7 @@ Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 <ul>
 <li>TypeScript</li>
 <li>Axios</li>
+<li>React Router</li>
 <li>MobX - State Management</li>
 <li>Mobx-react-lite(connect functional components with Mobx)</li>
 <li>Semantic UI</li>
