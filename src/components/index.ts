@@ -1,5 +1,5 @@
 export { default as HomePage } from '../components/home/HomePage'
+export { default as NavBar } from '../components/layouts/NavBar'
 export { default as ActivityForm } from '../components/activities/Form/ActivityForm'
 export { default as ActivityDetails } from '../components/activities/Details/ActivityDetails'
-export { default as NavBar } from '../components/layouts/NavBar'
 export { default as ActivityDashboard } from '../components/activities/dashboard/ActivityDashboard'
