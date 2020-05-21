@@ -8,11 +8,19 @@ import {
   ActivityForm,
 } from '../components'
 import { observer } from 'mobx-react-lite'
-import { Route, withRouter, RouteComponentProps } from 'react-router-dom'
+import {
+  Route,
+  withRouter,
+  RouteComponentProps,
+  Switch,
+} from 'react-router-dom'
+import NotFound from '../components/layouts/NotFound'
+import { ToastContainer } from 'react-toastify'
 
 const App: React.FC<RouteComponentProps> = ({ location }) => {
   return (
     <Fragment>
+      <ToastContainer position='bottom-right' />
       <Route exact path='/' component={HomePage} />
       <Route
         path={'/(.+)'}
@@ -20,14 +28,21 @@ const App: React.FC<RouteComponentProps> = ({ location }) => {
           <Fragment>
             <NavBar />
             <Container style={{ marginTop: '7em' }}>
-              <Route exact path='/activities' component={ActivityDashboard} />
-              <Route exact path='/activities/:id' component={ActivityDetails} />
-              <Route
-                key={location.key}
-                exact
-                path={['/createactivity', '/manage/:id']}
-                component={ActivityForm}
-              />
+              <Switch>
+                <Route exact path='/activities' component={ActivityDashboard} />
+                <Route
+                  exact
+                  path='/activities/:id'
+                  component={ActivityDetails}
+                />
+                <Route
+                  key={location.key}
+                  exact
+                  path={['/createactivity', '/manage/:id']}
+                  component={ActivityForm}
+                />
+                <Route component={NotFound} />
+              </Switch>
             </Container>
           </Fragment>
         )}
