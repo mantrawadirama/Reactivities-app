@@ -1,3 +1,7 @@
+import {
+  setActivityProps,
+  createAttendee,
+} from './../components/common/util/util'
 import { RootStore } from './rootStore'
 import { history } from './../index'
 import { IActivity } from './../models/activity'
@@ -18,7 +22,7 @@ export default class ActivityStore {
   @observable loadingInitial = false
   @observable submitting = false
   @observable target = ''
-
+  @observable loading = false
   @computed get activitiesByDate() {
     return this.groupActivitiesByDate(
       Array.from(this.activityRegistry.values())
@@ -41,11 +45,12 @@ export default class ActivityStore {
   }
   @action loadActivities = async () => {
     this.loadingInitial = true
+
     try {
       const activities = await ActivityService.Operations.list()
       runInAction('loading activities', () => {
         activities.forEach((activity) => {
-          activity.date = new Date(activity.date)
+          setActivityProps(activity, this.rootStore.userStore.user!)
           this.activityRegistry.set(activity.id, activity)
         })
         this.loadingInitial = false
@@ -68,7 +73,7 @@ export default class ActivityStore {
       try {
         activity = await ActivityService.Operations.details(id)
         runInAction('getting activity', () => {
-          activity.date = new Date(activity.date)
+          setActivityProps(activity, this.rootStore.userStore.user!)
           this.activity = activity
           this.activityRegistry.set(activity.id, activity)
           this.loadingInitial = false
@@ -95,6 +100,12 @@ export default class ActivityStore {
     this.submitting = true
     try {
       await ActivityService.Operations.create(activity)
+      const attendee = createAttendee(this.rootStore.userStore.user!)
+      attendee.isHost = true
+      let attendees = []
+      attendees.push(attendee)
+      activity.attendees = attendees
+      activity.isHost = true
       runInAction('create activity', () => {
         this.activityRegistry.set(activity.id, activity)
 
@@ -148,6 +159,49 @@ export default class ActivityStore {
         this.target = ''
       })
       console.log(error)
+    }
+  }
+
+  @action attendActivity = async () => {
+    const attendee = createAttendee(this.rootStore.userStore.user!)
+    this.loading = true
+    try {
+      await ActivityService.Operations.attend(this.activity!.id)
+      runInAction(() => {
+        if (this.activity) {
+          this.activity.attendees.push(attendee)
+          this.activity.isGoing = true
+          this.activityRegistry.set(this.activity.id, this.activity)
+          this.loading = false
+        }
+      })
+    } catch (error) {
+      runInAction(() => {
+        this.loading = false
+      })
+      toast.error('Problem signing up to activity')
+    }
+  }
+
+  @action cancelAttendance = async () => {
+    this.loading = true
+    try {
+      await ActivityService.Operations.unattend(this.activity!.id)
+      runInAction(() => {
+        if (this.activity) {
+          this.activity.attendees = this.activity.attendees.filter(
+            (a) => a.username !== this.rootStore.userStore.user!.username
+          )
+          this.activity.isGoing = false
+          this.activityRegistry.set(this.activity.id, this.activity)
+          this.loading = false
+        }
+      })
+    } catch (error) {
+      runInAction(() => {
+        this.loading = false
+      })
+      toast.error('Problem cancelling attendance')
     }
   }
 }
