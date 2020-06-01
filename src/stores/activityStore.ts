@@ -7,7 +7,7 @@ import { history } from './../index'
 import { IActivity } from './../models/activity'
 import { observable, action, computed, runInAction } from 'mobx'
 import { SyntheticEvent } from 'react'
-import ActivityService from '../service/ActivityService'
+import Service from '../service/Service'
 import { toast } from 'react-toastify'
 
 export default class ActivityStore {
@@ -47,7 +47,7 @@ export default class ActivityStore {
     this.loadingInitial = true
 
     try {
-      const activities = await ActivityService.Operations.list()
+      const activities = await Service.Activities.list()
       runInAction('loading activities', () => {
         activities.forEach((activity) => {
           setActivityProps(activity, this.rootStore.userStore.user!)
@@ -71,7 +71,7 @@ export default class ActivityStore {
     } else {
       this.loadingInitial = true
       try {
-        activity = await ActivityService.Operations.details(id)
+        activity = await Service.Activities.details(id)
         runInAction('getting activity', () => {
           setActivityProps(activity, this.rootStore.userStore.user!)
           this.activity = activity
@@ -99,7 +99,7 @@ export default class ActivityStore {
   @action createActivity = async (activity: IActivity) => {
     this.submitting = true
     try {
-      await ActivityService.Operations.create(activity)
+      await Service.Activities.create(activity)
       const attendee = createAttendee(this.rootStore.userStore.user!)
       attendee.isHost = true
       let attendees = []
@@ -124,7 +124,7 @@ export default class ActivityStore {
   @action editActivity = async (activity: IActivity) => {
     this.submitting = true
     try {
-      await ActivityService.Operations.update(activity)
+      await Service.Activities.update(activity)
       runInAction('edit activity', () => {
         this.activityRegistry.set(activity.id, activity)
         this.activity = activity
@@ -147,7 +147,7 @@ export default class ActivityStore {
     try {
       this.submitting = true
       this.target = event.currentTarget.name
-      await ActivityService.Operations.delete(id)
+      await Service.Activities.delete(id)
       runInAction('delete activity', () => {
         this.activityRegistry.delete(id)
         this.submitting = false
@@ -166,7 +166,7 @@ export default class ActivityStore {
     const attendee = createAttendee(this.rootStore.userStore.user!)
     this.loading = true
     try {
-      await ActivityService.Operations.attend(this.activity!.id)
+      await Service.Activities.attend(this.activity!.id)
       runInAction(() => {
         if (this.activity) {
           this.activity.attendees.push(attendee)
@@ -186,7 +186,7 @@ export default class ActivityStore {
   @action cancelAttendance = async () => {
     this.loading = true
     try {
-      await ActivityService.Operations.unattend(this.activity!.id)
+      await Service.Activities.unattend(this.activity!.id)
       runInAction(() => {
         if (this.activity) {
           this.activity.attendees = this.activity.attendees.filter(

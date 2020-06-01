@@ -2,7 +2,7 @@ import { history } from './../index'
 import { RootStore } from './rootStore'
 import { IUser, IUserFormValues } from './../models/user'
 import { observable, computed, action, runInAction } from 'mobx'
-import ActivityService from '../service/ActivityService'
+import Service from '../service/Service'
 
 export default class UserStore {
   rootStore: RootStore
@@ -19,7 +19,7 @@ export default class UserStore {
 
   @action register = async (values: IUserFormValues) => {
     try {
-      const user = await ActivityService.User.register(values)
+      const user = await Service.User.register(values)
 
       this.rootStore.commonStore.setToken(user.token)
       this.rootStore.modalStore.closeModal()
@@ -31,7 +31,7 @@ export default class UserStore {
 
   @action login = async (values: IUserFormValues) => {
     try {
-      const user = await ActivityService.User.login(values)
+      const user = await Service.User.login(values)
       runInAction(() => {
         this.user = user
       })
@@ -52,7 +52,7 @@ export default class UserStore {
 
   @action getUser = async () => {
     try {
-      const user = await ActivityService.User.current()
+      const user = await Service.User.current()
       runInAction(() => {
         this.user = user
       })
