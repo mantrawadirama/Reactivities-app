@@ -1,5 +1,5 @@
-import { IUser, IUserFormValues } from './../models/user'
-import { IActivity } from './../models/activity'
+import { IUser, IUserFormValues } from '../models/user'
+import { IActivity } from '../models/activity'
 import axios, { AxiosResponse } from 'axios'
 import { history } from '..'
 import { toast } from 'react-toastify'
@@ -63,7 +63,7 @@ const requests = {
   },
 }
 
-const Operations = {
+const Activities = {
   list: (): Promise<IActivity[]> => requests.get('/activities'),
   details: (id: string) => requests.get(`/activities/${id}`),
   create: (activity: IActivity) => requests.post('/activities', activity),
@@ -87,9 +87,11 @@ const User = {
 const Profiles = {
   get: (username: string): Promise<IProfile> =>
     requests.get(`/profiles/${username}`),
+  updateProfile: (profile: Partial<IProfile>) =>
+    requests.put(`/profiles`, profile),
   uploadPhoto: (photo: Blob): Promise<IPhoto> =>
     requests.postForm(`/photos`, photo),
   setMainPhoto: (id: string) => requests.post(`/photos/${id}/setMain`, {}),
   deletePhoto: (id: string) => requests.del(`/photos/${id}`),
 }
-export default { Operations, User, Profiles }
+export default { Activities, User, Profiles }

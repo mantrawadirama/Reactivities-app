@@ -1,7 +1,7 @@
 import { RootStore } from './rootStore'
 import { observable, action, runInAction, computed } from 'mobx'
 import { IProfile, IPhoto } from '../models/profile'
-import ActivityService from '../service/ActivityService'
+import Service from '../service/Service'
 import { toast } from 'react-toastify'
 
 export default class ProfileStore {
@@ -26,7 +26,7 @@ export default class ProfileStore {
   @action loadProfile = async (username: string) => {
     this.loadingProfile = true
     try {
-      const profile = await ActivityService.Profiles.get(username)
+      const profile = await Service.Profiles.get(username)
       runInAction(() => {
         this.profile = profile
         this.loadingProfile = false
@@ -42,7 +42,7 @@ export default class ProfileStore {
   @action uploadPhoto = async (file: Blob) => {
     this.uploadingPhoto = true
     try {
-      const photo = await ActivityService.Profiles.uploadPhoto(file)
+      const photo = await Service.Profiles.uploadPhoto(file)
       runInAction(() => {
         if (this.profile) {
           this.profile.photos.push(photo)
@@ -65,7 +65,7 @@ export default class ProfileStore {
   @action setMainPhoto = async (photo: IPhoto) => {
     this.loading = true
     try {
-      await ActivityService.Profiles.setMainPhoto(photo.id)
+      await Service.Profiles.setMainPhoto(photo.id)
       runInAction(() => {
         this.rootStore.userStore.user!.image = photo.url
         this.profile!.photos.find((a) => a.isMain)!.isMain = false
@@ -84,7 +84,7 @@ export default class ProfileStore {
   @action deletePhoto = async (photo: IPhoto) => {
     this.loading = true
     try {
-      await ActivityService.Profiles.deletePhoto(photo.id)
+      await Service.Profiles.deletePhoto(photo.id)
       runInAction(() => {
         this.profile!.photos = this.profile!.photos.filter(
           (a) => a.id !== photo.id
@@ -93,6 +93,25 @@ export default class ProfileStore {
       })
     } catch (error) {
       toast.error('Problem deleting the photo')
+      runInAction(() => {
+        this.loading = false
+      })
+    }
+  }
+
+  @action updateProfile = async (profile: Partial<IProfile>) => {
+    try {
+      await Service.Profiles.updateProfile(profile)
+      runInAction(() => {
+        if (
+          profile.displayName !== this.rootStore.userStore.user!.displayName
+        ) {
+          this.rootStore.userStore.user!.displayName = profile.displayName!
+        }
+        this.profile = { ...this.profile!, ...profile }
+      })
+    } catch (error) {
+      toast.error('Problem updating profile')
       runInAction(() => {
         this.loading = false
       })
