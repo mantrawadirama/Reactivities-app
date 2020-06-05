@@ -9,6 +9,11 @@ import { observable, action, computed, runInAction } from 'mobx'
 import { SyntheticEvent } from 'react'
 import Service from '../service/Service'
 import { toast } from 'react-toastify'
+import {
+  HubConnection,
+  HubConnectionBuilder,
+  LogLevel,
+} from '@microsoft/signalr'
 
 export default class ActivityStore {
   rootStore: RootStore
@@ -23,6 +28,56 @@ export default class ActivityStore {
   @observable submitting = false
   @observable target = ''
   @observable loading = false
+  @observable.ref hubConnection: HubConnection | null = null
+
+  @action createHubConnection = (acitivityId: String) => {
+    this.hubConnection = new HubConnectionBuilder()
+      .withUrl(`${process.env.REACT_APP_CHAT_URL}`, {
+        accessTokenFactory: () => this.rootStore.commonStore.token!,
+      })
+      .configureLogging(LogLevel.Information)
+      .build()
+
+    this.hubConnection
+      .start()
+      .then(() => console.log(this.hubConnection!.state))
+      .then(() => {
+        console.log('try joining group')
+        this.hubConnection!.invoke('AddToGroup', acitivityId)
+      })
+      .catch((error) => console.log('Error establishing connection: ', error))
+
+    this.hubConnection.on('ReceiveComment', (comment) => {
+      runInAction(() => {
+        this.activity!.comments.push(comment)
+      })
+    })
+
+    this.hubConnection.on('Send', (message) => {
+      toast.info(message)
+    })
+  }
+
+  @action stopHubConnection = () => {
+    this.hubConnection!.invoke('RemoveFromGroup', this.activity!.id)
+      .then(() => {
+        this.hubConnection!.stop()
+      })
+      .then(() => {
+        console.log('connection stopped')
+      })
+      .catch((err) => console.log(err))
+  }
+
+  @action addComment = async (values: any) => {
+    values.activityId = this.activity!.id
+    try {
+      await this.hubConnection!.invoke('SendComment', values)
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
   @computed get activitiesByDate() {
     return this.groupActivitiesByDate(
       Array.from(this.activityRegistry.values())
