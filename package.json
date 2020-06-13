@@ -41,7 +41,7 @@
   },
   "scripts": {
     "start": "env-cmd -f ./envs/.local.env react-scripts start",
-    "build": "env-cmd -f ./envs/.${STAGE:-dev}.env react-scripts build",
+    "build": "env-cmd -f ./envs/.prod.env react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
