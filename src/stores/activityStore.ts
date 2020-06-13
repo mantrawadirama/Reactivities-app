@@ -5,7 +5,7 @@ import {
 import { RootStore } from './rootStore'
 import { history } from './../index'
 import { IActivity } from './../models/activity'
-import { observable, action, computed, runInAction, reaction } from 'mobx'
+import { observable, action, computed, runInAction, reaction, toJS } from 'mobx'
 import { SyntheticEvent } from 'react'
 import Service from '../service/Service'
 import { toast } from 'react-toastify'
@@ -166,7 +166,7 @@ export default class ActivityStore {
     let activity = this.getActivity(id)
     if (activity) {
       this.activity = activity
-      return activity
+      return toJS(activity)
     } else {
       this.loadingInitial = true
       try {
