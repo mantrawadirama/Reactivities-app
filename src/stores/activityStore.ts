@@ -14,6 +14,7 @@ import {
   HubConnectionBuilder,
   LogLevel,
 } from '@microsoft/signalr'
+import jwt from 'jsonwebtoken'
 
 const LIMIT = 2
 export default class ActivityStore {
@@ -75,7 +76,7 @@ export default class ActivityStore {
   @action createHubConnection = (acitivityId: String) => {
     this.hubConnection = new HubConnectionBuilder()
       .withUrl(`${process.env.REACT_APP_CHAT_URL}`, {
-        accessTokenFactory: () => this.rootStore.commonStore.token!,
+        accessTokenFactory: () => this.checkTokenAndRefreshIfExpired(),
       })
       .configureLogging(LogLevel.Information)
       .build()
@@ -84,8 +85,10 @@ export default class ActivityStore {
       .start()
       .then(() => console.log(this.hubConnection!.state))
       .then(() => {
-        console.log('try joining group')
-        this.hubConnection!.invoke('AddToGroup', acitivityId)
+        if (this.hubConnection!.state === 'Connected') {
+          //console.log('try joining group')
+          this.hubConnection!.invoke('AddToGroup', acitivityId)
+        }
       })
       .catch((error) => console.log('Error establishing connection: ', error))
 
@@ -95,9 +98,25 @@ export default class ActivityStore {
       })
     })
 
-    // this.hubConnection.on('Send', (message) => {
-    //   toast.info(message)
-    // })
+    this.hubConnection.on('Send', (message) => {
+      toast.info(message)
+    })
+  }
+
+  checkTokenAndRefreshIfExpired = async () => {
+    const token = localStorage.getItem('jwt')
+    const refreshToken = localStorage.getItem('refreshToken')
+    if (token && refreshToken) {
+      const decodedToken: any = jwt.decode(token)
+      if (decodedToken && Date.now() >= decodedToken.exp * 1000 - 5000) {
+        try {
+          return await Service.User.refreshToken(token, refreshToken)
+        } catch (error) {
+          toast.error('Problem connecting to the chat')
+        }
+      }
+      return token
+    }
   }
 
   @action stopHubConnection = () => {

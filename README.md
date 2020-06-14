@@ -18,4 +18,5 @@ Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 <li>Read env variables using env-cmd</li>
 <li>Toast notifications</li>
 <li>React Final Form</li>
+<li>Jsonwebtoken
 </ul>

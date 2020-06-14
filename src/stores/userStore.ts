@@ -22,6 +22,7 @@ export default class UserStore {
       const user = await Service.User.register(values)
 
       this.rootStore.commonStore.setToken(user.token)
+      this.rootStore.commonStore.setRefreshToken(user.refreshToken)
       this.rootStore.modalStore.closeModal()
       history.push('/activities')
     } catch (error) {
@@ -36,6 +37,7 @@ export default class UserStore {
         this.user = user
       })
       this.rootStore.commonStore.setToken(user.token)
+      this.rootStore.commonStore.setRefreshToken(user.refreshToken)
       this.rootStore.modalStore.closeModal()
 
       history.push('/activities')
@@ -46,6 +48,7 @@ export default class UserStore {
 
   @action logout = () => {
     this.rootStore.commonStore.setToken(null)
+    this.rootStore.commonStore.setRefreshToken(null)
     this.user = null
     history.push('/')
   }
